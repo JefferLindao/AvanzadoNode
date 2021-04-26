@@ -3,7 +3,9 @@
 # Optional REPL history
 .node_repl_history
 node_modules
-platziverse-bd/node_modules
+platziverse-db/node_modules
+platziverse-db/coverage
+platziverse-db/.nyc_output
 # Output of 'npm pack'
 *.tgz
 
