@@ -1,9 +1,9 @@
 'use strict'
 
-const { connected } = require("../tests/fixtures/agent")
+// const { connected } = require('../tests/fixtures/agent')
 
-function setupAgent(AgentModel) {
-  async function createOrUpdate(agent) {
+function setupAgent (AgentModel) {
+  async function createOrUpdate (agent) {
     const cond = {
       where: {
         uuid: agent.uuid
@@ -20,11 +20,11 @@ function setupAgent(AgentModel) {
     return result.toJSON()
   }
 
-  function findById(id) {
+  function findById (id) {
     return AgentModel.findById(id)
   }
 
-  function findByUuid(uuid) {
+  function findByUuid (uuid) {
     return AgentModel.findOne({
       where: {
         uuid
@@ -32,11 +32,11 @@ function setupAgent(AgentModel) {
     })
   }
 
-  function findAll() {
+  function findAll () {
     return AgentModel.findAll()
   }
 
-  function findConnected() {
+  function findConnected () {
     return AgentModel.findAll({
       where: {
         connected: true
@@ -44,7 +44,7 @@ function setupAgent(AgentModel) {
     })
   }
 
-  function findByUsername(username) {
+  function findByUsername (username) {
     return AgentModel.findAll({
       where: {
         username,

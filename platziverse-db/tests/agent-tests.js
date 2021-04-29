@@ -14,24 +14,24 @@ const MetricStub = {
 }
 const single = Object.assign({}, agentFixture.single)
 const id = 1
-let uuid = 'yyyy-yy-yy'
+const uuid = 'yyyy-yy-yy'
 let AgentStub = null
 let db = null
 let sandbox = null
 
-let uuidArgs = {
+const uuidArgs = {
   where: { uuid }
 }
 
-let connectedArgs = {
+const connectedArgs = {
   where: { connected: true }
 }
 
-let usernameArgs = {
+const usernameArgs = {
   where: { username: 'platzi', connected: true }
 }
 
-let newAgent = {
+const newAgent = {
   uuid: '123-123-123',
   name: 'test',
   username: 'test',
@@ -57,7 +57,7 @@ test.beforeEach(async () => {
   // Model create Stub
   AgentStub.create = sandbox.stub()
   AgentStub.create.withArgs(newAgent).returns(Promise.resolve({
-    toJSON() { return newAgent }
+    toJSON () { return newAgent }
   }))
 
   // Model update Stub
@@ -112,7 +112,7 @@ test.serial('Agent#createOrUpdate - exists', async t => {
 })
 
 test.serial('Agent#findByUuid', async t => {
-  let agent = await db.Agent.findByUuid(uuid)
+  const agent = await db.Agent.findByUuid(uuid)
 
   t.true(AgentStub.findOne.called, 'findOne should be called on model')
   t.true(AgentStub.findOne.calledOnce, 'findOne should be called once')
@@ -122,7 +122,7 @@ test.serial('Agent#findByUuid', async t => {
 })
 
 test.serial('Agent#findAll', async t => {
-  let agents = await db.Agent.findAll()
+  const agents = await db.Agent.findAll()
 
   t.true(AgentStub.findAll.called, 'findAll should be called on model')
   t.true(AgentStub.findAll.calledOnce, 'findAll should be called once')
@@ -133,7 +133,7 @@ test.serial('Agent#findAll', async t => {
 })
 
 test.serial('Agent#findConnected', async t => {
-  let agents = await db.Agent.findConnected()
+  const agents = await db.Agent.findConnected()
 
   t.true(AgentStub.findAll.called, 'findAll should be called on model')
   t.true(AgentStub.findAll.calledOnce, 'findAll should be called once')
@@ -144,7 +144,7 @@ test.serial('Agent#findConnected', async t => {
 })
 
 test.serial('Agent#findByUsername', async t => {
-  let agents = await db.Agent.findByUsername('platzi')
+  const agents = await db.Agent.findByUsername('platzi')
 
   t.true(AgentStub.findAll.called, 'findAll should be called on model')
   t.true(AgentStub.findAll.calledOnce, 'findAll should be called once')
