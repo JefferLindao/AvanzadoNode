@@ -7,7 +7,7 @@ function setupMetric (metricModel, agentModel) {
       group: ['type'],
       include: [{
         attributes: [],
-        module: agentModel,
+        model: agentModel,
         where: {
           uuid
         }
@@ -34,7 +34,7 @@ function setupMetric (metricModel, agentModel) {
         type
       },
       limit: 20,
-      order: [['created', 'DESC']],
+      order: [['createdAt', 'DESC']],
       include: [{
         attributes: [],
         model: agentModel,
