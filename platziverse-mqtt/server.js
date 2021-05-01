@@ -37,8 +37,29 @@ server.on('clientConnected', client => {
   clients.set(client.id, null)
 })
 
-server.on('clientDisconnected', client => {
+server.on('clientDisconnected', async (client) => {
   debug(`CLient Disconnected: ${client.id}`)
+  const agent = clients.get(client.id)
+  if (agent) {
+    // Mark Agent as Disconnected
+    agent.connected = false
+
+    try {
+      await Agent.createOrUpdate(agent)
+    } catch (error) {
+      return handlerError(error)
+    }
+    clients.delete(client.id)
+    server.publish({
+      topic: 'agent/disconnected',
+      payload: JSON.stringify({
+        agent: {
+          uuid: agent.uuid
+        }
+      })
+    })
+    debug(`Client (${client.id}) associated to Agent (${agent.uuid}) marked as disconnected`)
+  }
 })
 
 server.on('published', async (packet, client) => {
@@ -50,7 +71,9 @@ server.on('published', async (packet, client) => {
       break
     case 'agent/message':
       debug(`Payload: ${packet.payload}`)
+
       const payload = parsePayload(packet.payload)
+
       if (payload) {
         payload.agent.connected = true
         let agent
@@ -77,6 +100,16 @@ server.on('published', async (packet, client) => {
             })
           })
         }
+        // Store Metric
+        for (const metric of payload.metrics) {
+          let m
+          try {
+            m = await Metric.create(agent.uuid, metric)
+          } catch (error) {
+            return handlerError(error)
+          }
+          debug(`Metric ${m.id} saved on agent ${agent.uuid}`)
+        }
       }
       break
   }
@@ -93,13 +126,13 @@ server.on('ready', async () => {
 
 server.on('error', handlerFatalError)
 
-function handlerFatalError (err) {
+function handlerFatalError(err) {
   console.error(`${chalk.red('[fatal error]')} ${err.message}`)
   console.error(err.stack)
   process.exit(1)
 }
 
-function handlerError (err) {
+function handlerError(err) {
   console.error(`${chalk.red('[fatal error]')} ${err.message}`)
   console.error(err.stack)
 }
