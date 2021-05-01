@@ -8,6 +8,9 @@ platziverse-db/coverage
 platziverse-db/.nyc_output
 
 platziverse-mqtt/node_modules
+
+platziverse-agent/node_modules
+
 # Output of 'npm pack'
 *.tgz
 
