@@ -5,6 +5,7 @@ const mosca = require('mosca')
 const redis = require('redis')
 const chalk = require('chalk')
 const db = require('platziverse-db')
+const { parsePayload } = require('./util')
 
 const backend = {
   type: 'redis',
@@ -27,20 +28,58 @@ const config = {
 }
 
 const server = new mosca.Server(settings)
+const clients = new Map()
 
 let Agent, Metric
 
 server.on('clientConnected', client => {
   debug(`Client Connected: ${client.id}`)
+  clients.set(client.id, null)
 })
 
 server.on('clientDisconnected', client => {
   debug(`CLient Disconnected: ${client.id}`)
 })
 
-server.on(`published`, (packet, client) => {
+server.on('published', async (packet, client) => {
   debug(`Received: ${packet.topic}`)
-  debug(`Payload: ${packet.payload}`)
+  switch (packet.topic) {
+    case 'agent/connected':
+    case 'agent/disconnected':
+      debug(`Payload: ${packet.payload}`)
+      break
+    case 'agent/message':
+      debug(`Payload: ${packet.payload}`)
+      const payload = parsePayload(packet.payload)
+      if (payload) {
+        payload.agent.connected = true
+        let agent
+        try {
+          agent = await Agent.createOrUpdate(payload.agent)
+        } catch (error) {
+          return handlerError(error)
+        }
+        debug(`Agent ${agent.uuid} saved`)
+
+        // Notify Agent ia connected
+        if (!clients.get(client.id)) {
+          clients.set(client.id, agent)
+          server.publish({
+            topic: 'agent/connect',
+            payload: JSON.stringify({
+              agent: {
+                uuid: agent.uuid,
+                name: agent.name,
+                hostname: agent.hostname,
+                pid: agent.pid,
+                connected: agent.connected
+              }
+            })
+          })
+        }
+      }
+      break
+  }
 })
 
 server.on('ready', async () => {
@@ -54,10 +93,15 @@ server.on('ready', async () => {
 
 server.on('error', handlerFatalError)
 
-function handlerFatalError(err) {
+function handlerFatalError (err) {
   console.error(`${chalk.red('[fatal error]')} ${err.message}`)
   console.error(err.stack)
   process.exit(1)
+}
+
+function handlerError (err) {
+  console.error(`${chalk.red('[fatal error]')} ${err.message}`)
+  console.error(err.stack)
 }
 
 process.on('uncaughtException', handlerFatalError)
