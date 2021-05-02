@@ -1,5 +1,5 @@
 'use strict'
-const debug = require('debug')
+const debug = require('debug')('platziverse:agent')
 const os = require('os')
 const util = require('util')
 const mqtt = require('mqtt')
@@ -21,9 +21,10 @@ class PlatziverseAgeny extends EventEmitter {
     super()
 
     this._options = defaults(opts, options)
-    this._started = null
+    this._started = false
     this._timer = null
     this._client = null
+    this._agentId = null
     this._metrics = new Map()
   }
   addMetric(type, fn) {
@@ -40,9 +41,9 @@ class PlatziverseAgeny extends EventEmitter {
       this._client = mqtt.connect(opts.mqtt.host)
       this._started = true
 
-      this.client.subscribe('agent/message')
-      this.client.subscribe('agent/connected')
-      this.client.subscribe('agent/disconnected')
+      this._client.subscribe('agent/message')
+      this._client.subscribe('agent/connected')
+      this._client.subscribe('agent/disconnected')
 
       this._client.on('connect', () => {
         this._agentId = uuid.v4()
@@ -58,24 +59,24 @@ class PlatziverseAgeny extends EventEmitter {
                 hostname: os.hostname() || 'localhost',
                 pid: process.pid
               },
-              metric: [],
+              metrics: [],
               timestamp: new Date().getTime()
             }
-          }
-          for (const [metric, fin] of this._metrics) {
-            if (fn.length == 1) {
-              fn = util.promisify(fn)
+            for (let [metric, fn] of this._metrics) {
+              if (fn.length === 1) {
+                fn = util.promisify(fn)
+              }
+              message.metrics.push({
+                type: metric,
+                value: await Promise.resolve(fn())
+              })
             }
-            message.metric.push({
-              type: metric,
-              value: await Promise.resolve(fn())
-            })
+
+            debug('Sending', message)
+
+            this._client.publish('agent/message', JSON.stringify(message))
+            this.emit('message', message)
           }
-
-          debug('Sending', message)
-
-          this._client.publish('agent/message', JSON.stringify(message))
-          this.emit('message', message)
         }, opts.interval)
       })
 
@@ -94,15 +95,15 @@ class PlatziverseAgeny extends EventEmitter {
         }
       })
 
-      this._client.on('error', () => this.disconnec())
+      this._client.on('error', () => this.disconnect())
     }
   }
 
-  disconnec() {
+  disconnect() {
     if (this._started) {
       clearInterval(this._timer)
       this._started = false
-      this.emit('disconnnected', this._agentId)
+      this.emit('disconnected', this._agentId)
       this._client.end()
     }
   }
