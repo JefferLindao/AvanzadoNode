@@ -11,6 +11,7 @@ platziverse-mqtt/node_modules
 
 platziverse-agent/node_modules
 
+platziverse-api/node_modules
 # Output of 'npm pack'
 *.tgz
 
