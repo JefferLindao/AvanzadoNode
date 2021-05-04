@@ -28,10 +28,13 @@ function handlerFatalError(err) {
   console.error(err.stack)
   process.exit(1)
 }
+if (!module.parent) {
+  process.on('uncaughtException', handlerFatalError)
+  process.on('unhandledRejection', handlerFatalError)
 
-process.on('uncaughtException', handlerFatalError)
-process.on('unhandledRejection', handlerFatalError)
+  server.listen(port, () => {
+    console.log(`${chalk.green('[plaziverse-api]')} server listening on port ${port}`)
+  })
+}
 
-server.listen(port, () => {
-  console.log(`${chalk.green('[plaziverse-api]')} server listening on port ${port}`)
-})
+module.exports = server
