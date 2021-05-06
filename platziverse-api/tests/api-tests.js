@@ -11,7 +11,7 @@ test.serial.cb('/api/agents', t => {
     .expect('Content-Type', /json/)
     .end((err, res) => {
       t.falsy(err, 'shoult not return an error')
-      let body = res.body
+      const body = res.body
       t.deepEqual(body, {}, 'response body be the expected')
       t.end()
     })

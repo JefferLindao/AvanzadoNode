@@ -20,10 +20,10 @@ app.use((err, req, res, next) => {
     return res.status(404).send({ error: err.message })
   }
 
-  server.status(500).send({ error: err.message })
+  res.status(500).send({ error: err.message })
 })
 
-function handlerFatalError(err) {
+function handlerFatalError (err) {
   console.error(`${chalk.red('[fatal error]')} ${err.message}`)
   console.error(err.stack)
   process.exit(1)
