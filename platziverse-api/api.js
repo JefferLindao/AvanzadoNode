@@ -3,6 +3,7 @@ const debug = require('debug')('platziverse:api:routes')
 const express = require('express')
 const db = require('platziverse-db')
 const config = require('./config')
+const auth = require('express-jwt')
 
 const api = express.Router()
 
@@ -22,11 +23,19 @@ api.use('*', async (req, res, next) => {
   next()
 })
 
-api.get('/agents', async (req, res, next) => {
+api.get('/agents', auth(config.auth), async (req, res, next) => {
   debug('A request has come to /agents')
   let agents = []
+  const { user } = req
+  if (!user || !user.username) {
+    return next(new Error('Not autorized'))
+  }
   try {
-    agents = await Agent.findConnected()
+    if (user.admin) {
+      agents = await Agent.findConnected()
+    } else {
+      agents = await Agent.findByUsername(user.username)
+    }
   } catch (e) {
     return next(e)
   }
