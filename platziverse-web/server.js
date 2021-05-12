@@ -5,13 +5,16 @@ const http = require('http')
 const path = require('path')
 const express = require('express')
 const socketio = require('socket.io')
+const { pipe } = require('./util')
 const chalk = require('chalk')
+const PlatziverseAgent = require('platziverse-agent')
 
 const port = process.env.PORT || 8081
 
 const app = express()
 const server = http.createServer(app)
 const io = socketio(server)
+const agent = new PlatziverseAgent()
 
 app.use(express.static(path.join(__dirname, 'public')))
 
@@ -19,13 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 io.on('connect', socket => {
   debug(`Connected ${socket.id}`)
 
-  socket.on('agent/message', payload => {
-    console.log(payload)
-  })
-
-  setInterval(() => {
-    socket.emit('agent/message', { agent: 'xxx-yyy' })
-  }, 2000)
+  pipe(agent, socket)
 })
 
 function handlerFatalError(err) {
@@ -39,4 +36,5 @@ process.on('unhandledRejection', handlerFatalError)
 
 server.listen(port, () => {
   console.log(`${chalk.green('[platziverse-web]')} server listening on port: ${port}`)
+  agent.connect()
 })
