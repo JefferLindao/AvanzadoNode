@@ -88,7 +88,7 @@ server.on('published', async (packet, client) => {
         if (!clients.get(client.id)) {
           clients.set(client.id, agent)
           server.publish({
-            topic: 'agent/connect',
+            topic: 'agent/connected',
             payload: JSON.stringify({
               agent: {
                 uuid: agent.uuid,
