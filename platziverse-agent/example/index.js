@@ -36,10 +36,10 @@ function handler(payload) {
   console.log(payload)
 }
 
-setTimeout(() => agent.disconnect(), 10000)
+// setTimeout(() => agent.disconnect(), 10000)
 
 agent.on('agent/message', (payload) => {
   console.log(payload)
 })
 
-setTimeout(() => agent.disconnect(), 20000)
+// setTimeout(() => agent.disconnect(), 20000)
