@@ -43,7 +43,7 @@ api.get('/agents', auth(config.auth), async (req, res, next) => {
   res.send(agents)
 })
 
-api.get('/agents/:uuid', auth(config.auth), guard.check('[metrics:read]'), async (req, res, next) => {
+api.get('/agent/:uuid', auth(config.auth), guard.check(['metrics:read']), async (req, res, next) => {
   const { uuid } = req.params
 
   debug(`A request has come to /agents/${uuid}`)
