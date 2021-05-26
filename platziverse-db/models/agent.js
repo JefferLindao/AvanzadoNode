@@ -2,7 +2,7 @@
 const Sequelize = require('sequelize')
 const setupDatabase = require('../lib/db')
 
-function setupAgentModel(config) {
+function setupAgentModel (config) {
   const sequelize = setupDatabase(config)
   return sequelize.define('agent', {
     uuid: {
